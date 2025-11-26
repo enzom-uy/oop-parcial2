@@ -20,6 +20,7 @@ public class MenuPrincipal {
     public void mostrarMenuPrincipal() {
         boolean salir = false;
 
+        // bucle previo a que el usuario se authentique
         while (!salir) {
             if (!autenticarUsuario()) {
                 Utilidades.mostrarMensaje("Saliendo del sistema...");
@@ -29,6 +30,7 @@ public class MenuPrincipal {
             MenuOperacionesCuenta menuCuentas = new MenuOperacionesCuenta(gestorCuentas, usuarioActual);
             boolean continuarSesion = true;
 
+            // segundo bucle para cuando el usuario se authentica
             while (continuarSesion) {
                 int resultado = ejecutarMenuSegunRol(menuCuentas);
 

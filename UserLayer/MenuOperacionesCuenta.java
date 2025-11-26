@@ -106,6 +106,7 @@ public class MenuOperacionesCuenta {
     }
 
     public void menuSeleccionarCuentaActiva() {
+        // si no hay cuentas registradas en general
         if (gestorCuentas.contarCuentas() == 0) {
             Utilidades.mostrarError("No hay cuentas registradas. Cree una cuenta primero.");
             return;
@@ -115,6 +116,7 @@ public class MenuOperacionesCuenta {
 
         int cuentasDelUsuario = 0;
         for (Cuenta cuenta : gestorCuentas.obtenerTodasCuentas()) {
+            // no agrego la cuenta a la lista si no es del mismo usuario
             if (usuarioActual.getRol() == Rol.USUARIO && !cuenta.getTitular().equals(usuarioActual.getNombre())) {
                 continue;
             }
@@ -126,6 +128,7 @@ public class MenuOperacionesCuenta {
             cuentasDelUsuario++;
         }
 
+        // si no hay cuentas registradas a nombre del usuario
         if (usuarioActual.getRol() == Rol.USUARIO && cuentasDelUsuario == 0) {
             Utilidades.mostrarError("No tiene cuentas registradas a su nombre. Cree una cuenta primero.");
             return;
@@ -137,6 +140,7 @@ public class MenuOperacionesCuenta {
                 "Seleccionar Cuenta Activa",
                 JOptionPane.QUESTION_MESSAGE);
 
+        // checkeo que el usuario haya escrito algo
         if (numeroCuenta == null) {
             return;
         }
@@ -148,6 +152,8 @@ public class MenuOperacionesCuenta {
             return;
         }
 
+        // prevengo que el usuario seleccione como cuenta activa una cuenta que no es
+        // suya
         if (usuarioActual.getRol() == Rol.USUARIO && !cuenta.getTitular().equals(usuarioActual.getNombre())) {
             Utilidades.mostrarError("No puede seleccionar una cuenta que no es suya");
             return;

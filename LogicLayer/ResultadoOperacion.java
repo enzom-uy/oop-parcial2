@@ -13,6 +13,8 @@ public class ResultadoOperacion {
     }
 
     public ResultadoOperacion(boolean exito, String mensaje) {
+        // encadeno constructores partiendo del constructor principal (el de 3
+        // parametros)
         this(exito, mensaje, 0.0);
     }
 

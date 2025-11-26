@@ -1,5 +1,6 @@
 package LogicLayer;
 
+// vendría a ser como el "ticket" de una transacción
 public class Movimiento {
 
     private String numeroCuenta;
