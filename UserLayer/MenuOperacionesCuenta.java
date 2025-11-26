@@ -2,9 +2,11 @@ package UserLayer;
 
 import LogicLayer.Cuenta;
 import LogicLayer.GestorCuenta;
+import LogicLayer.Movimiento;
 import LogicLayer.ResultadoOperacion;
 import LogicLayer.Rol;
 import LogicLayer.Usuario;
+import java.util.LinkedList;
 import javax.swing.JOptionPane;
 
 public class MenuOperacionesCuenta {
@@ -28,19 +30,25 @@ public class MenuOperacionesCuenta {
     }
 
     public void menuCrearCuenta() {
-        String titular = JOptionPane.showInputDialog(
-                null,
-                "Ingrese el nombre del titular:",
-                "Crear Cuenta",
-                JOptionPane.QUESTION_MESSAGE);
+        String titular;
 
-        if (titular == null) {
-            return;
-        }
+        if (usuarioActual.getRol() == Rol.USUARIO) {
+            titular = usuarioActual.getNombre();
+        } else {
+            titular = JOptionPane.showInputDialog(
+                    null,
+                    "Ingrese el nombre del titular:",
+                    "Crear Cuenta",
+                    JOptionPane.QUESTION_MESSAGE);
 
-        if (titular.trim().isEmpty()) {
-            Utilidades.mostrarError("El nombre del titular no puede estar vacío");
-            return;
+            if (titular == null) {
+                return;
+            }
+
+            if (titular.trim().isEmpty()) {
+                Utilidades.mostrarError("El nombre del titular no puede estar vacío");
+                return;
+            }
         }
 
         String saldoStr = JOptionPane.showInputDialog(
@@ -161,47 +169,10 @@ public class MenuOperacionesCuenta {
             return;
         }
 
-        if (gestorCuentas.contarCuentas() < 2) {
-            Utilidades.mostrarError(
-                    "Se necesitan al menos 2 cuentas para realizar un depósito.\nActualmente solo puede retirar de su cuenta activa.");
-            return;
-        }
-
-        String numeroCuentaDestino = JOptionPane.showInputDialog(
-                null,
-                "Cuenta Activa (ORIGEN): " + cuentaActiva.getTitular() + " (N°: " + cuentaActiva.getNumeroCuenta()
-                        + ")\n" +
-                        "Saldo disponible: $" + String.format("%.2f", cuentaActiva.getSaldo()) + "\n\n" +
-                        "Ingrese el número de cuenta DESTINO\n" +
-                        "(a la que desea depositar):",
-                "Depositar",
-                JOptionPane.QUESTION_MESSAGE);
-
-        if (numeroCuentaDestino == null) {
-            return;
-        }
-
-        Cuenta cuentaDestino = gestorCuentas.buscarCuenta(numeroCuentaDestino);
-
-        if (cuentaDestino == null) {
-            Utilidades.mostrarError("Cuenta de destino no encontrada");
-            return;
-        }
-
-        if (cuentaActiva.getNumeroCuenta().equals(cuentaDestino.getNumeroCuenta())) {
-            Utilidades.mostrarError(
-                    "No puede depositar a su propia cuenta activa.\nDebe seleccionar una cuenta diferente.");
-            return;
-        }
-
         String montoStr = JOptionPane.showInputDialog(
                 null,
-                "Cuenta Origen (Activa): " + cuentaActiva.getTitular() + " (N°: " + cuentaActiva.getNumeroCuenta()
-                        + ")\n" +
-                        "Saldo disponible: $" + String.format("%.2f", cuentaActiva.getSaldo()) + "\n\n" +
-                        "Cuenta Destino: " + cuentaDestino.getTitular() + " (N°: " + cuentaDestino.getNumeroCuenta()
-                        + ")\n" +
-                        "Saldo actual: $" + String.format("%.2f", cuentaDestino.getSaldo()) + "\n\n" +
+                "Cuenta Activa: " + cuentaActiva.getTitular() + " (N°: " + cuentaActiva.getNumeroCuenta() + ")\n" +
+                        "Saldo actual: $" + String.format("%.2f", cuentaActiva.getSaldo()) + "\n\n" +
                         "Ingrese el monto a depositar:",
                 "Depositar",
                 JOptionPane.QUESTION_MESSAGE);
@@ -218,11 +189,11 @@ public class MenuOperacionesCuenta {
             return;
         }
 
-        ResultadoOperacion resultado = gestorCuentas.transferir(cuentaActiva, cuentaDestino, monto);
+        ResultadoOperacion resultado = gestorCuentas.depositar(cuentaActiva, monto);
 
         if (resultado.isExito()) {
-            Utilidades.mostrarMensaje(resultado.getMensaje() + "\n\n" +
-                    "Nuevo saldo de su cuenta activa: $" + String.format("%.2f", resultado.getNuevoSaldo()));
+            Utilidades.mostrarMensaje(resultado.getMensaje() + "\n" +
+                    "Nuevo saldo: $" + String.format("%.2f", resultado.getNuevoSaldo()));
         } else {
             Utilidades.mostrarError(resultado.getMensaje());
         }
@@ -448,5 +419,58 @@ public class MenuOperacionesCuenta {
                         "Titular: " + cuenta.getTitular() + "\n" +
                         "Tipo: " + cuenta.getTipoCuenta() + "\n" +
                         "Saldo: $" + String.format("%.2f", cuenta.getSaldo()));
+    }
+
+    public void menuVerHistorial() {
+        if (gestorCuentas.contarCuentas() == 0) {
+            Utilidades.mostrarError("No hay cuentas registradas en el sistema");
+            return;
+        }
+
+        String numeroCuenta = JOptionPane.showInputDialog(
+                null,
+                "Ingrese el número de cuenta para ver su historial:",
+                "Historial de Movimientos",
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (numeroCuenta == null) {
+            return;
+        }
+
+        Cuenta cuenta = gestorCuentas.buscarCuenta(numeroCuenta);
+
+        if (cuenta == null) {
+            Utilidades.mostrarError("Cuenta no encontrada");
+            return;
+        }
+
+        if (usuarioActual.getRol() == Rol.USUARIO && !cuenta.getTitular().equals(usuarioActual.getNombre())) {
+            Utilidades.mostrarError("No puede ver el historial de una cuenta que no es suya");
+            return;
+        }
+
+        LinkedList<Movimiento> movimientos = gestorCuentas.obtenerHistorialCuenta(numeroCuenta);
+
+        if (movimientos.isEmpty()) {
+            Utilidades.mostrarMensaje("No hay movimientos registrados para esta cuenta");
+            return;
+        }
+
+        String historial = "HISTORIAL DE MOVIMIENTOS\n\n" +
+                "Cuenta: " + cuenta.getNumeroCuenta() + "\n" +
+                "Titular: " + cuenta.getTitular() + "\n" +
+                "Total de movimientos: " + movimientos.size() + "\n\n";
+
+        historial += "========================\n\n";
+
+        for (Movimiento movimiento : movimientos) {
+            historial += movimiento.toString() + "\n";
+        }
+
+        JOptionPane.showMessageDialog(
+                null,
+                historial,
+                "Historial de Movimientos",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 }

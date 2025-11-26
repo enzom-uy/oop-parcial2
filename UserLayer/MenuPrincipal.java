@@ -26,10 +26,11 @@ public class MenuPrincipal {
                 return;
             }
 
+            MenuOperacionesCuenta menuCuentas = new MenuOperacionesCuenta(gestorCuentas, usuarioActual);
             boolean continuarSesion = true;
 
             while (continuarSesion) {
-                int resultado = ejecutarMenuSegunRol();
+                int resultado = ejecutarMenuSegunRol(menuCuentas);
 
                 if (resultado == 0) {
                     continuarSesion = false;
@@ -65,9 +66,7 @@ public class MenuPrincipal {
         return usuarioActual != null;
     }
 
-    private int ejecutarMenuSegunRol() {
-        MenuOperacionesCuenta menuCuentas = new MenuOperacionesCuenta(gestorCuentas, usuarioActual);
-
+    private int ejecutarMenuSegunRol(MenuOperacionesCuenta menuCuentas) {
         if (usuarioActual.getRol() == Rol.ADMINISTRADOR) {
             MenuAdministrador menuAdmin = new MenuAdministrador(usuarioActual, gestorCuentas, gestorUsuarios,
                     menuCuentas);

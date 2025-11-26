@@ -23,6 +23,7 @@ public class MenuUsuario {
                 "Transferir",
                 "Consultar Saldo",
                 "Ver Todas las Cuentas",
+                "Ver Historial de Movimientos",
                 "Cerrar Sesión",
                 "Salir del Sistema"
         };
@@ -48,9 +49,9 @@ public class MenuUsuario {
                 opciones,
                 opciones[0]);
 
-        if (seleccion == -1 || seleccion == 8) {
+        if (seleccion == -1 || seleccion == 9) {
             return -1;
-        } else if (seleccion == 7) {
+        } else if (seleccion == 8) {
             return 0;
         } else {
             ejecutarOpcion(seleccion);
@@ -80,6 +81,9 @@ public class MenuUsuario {
                 break;
             case 6:
                 menuCuentas.mostrarTodasCuentas();
+                break;
+            case 7:
+                menuCuentas.menuVerHistorial();
                 break;
         }
     }

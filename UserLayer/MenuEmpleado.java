@@ -27,6 +27,7 @@ public class MenuEmpleado {
                 "Buscar Cuenta",
                 "Consultar Saldo de Cuenta",
                 "Ver Todos los Usuarios",
+                "Ver Historial de Movimientos",
                 "Cerrar Sesión",
                 "Salir del Sistema"
         };
@@ -45,9 +46,9 @@ public class MenuEmpleado {
                 opciones,
                 opciones[0]);
 
-        if (seleccion == -1 || seleccion == 6) {
+        if (seleccion == -1 || seleccion == 7) {
             return -1;
-        } else if (seleccion == 5) {
+        } else if (seleccion == 6) {
             return 0;
         } else {
             ejecutarOpcion(seleccion);
@@ -71,6 +72,9 @@ public class MenuEmpleado {
                 break;
             case 4:
                 mostrarTodosUsuarios();
+                break;
+            case 5:
+                menuCuentas.menuVerHistorial();
                 break;
         }
     }

@@ -5,9 +5,11 @@ import java.util.LinkedList;
 public class GestorCuenta {
 
     private LinkedList<Cuenta> cuentas;
+    private GestorMovimientos gestorMovimientos;
 
     public GestorCuenta() {
         this.cuentas = new LinkedList<>();
+        this.gestorMovimientos = new GestorMovimientos();
     }
 
     public Cuenta crearCuenta(String titular, double saldoInicial, String tipoCuenta) {
@@ -41,8 +43,17 @@ public class GestorCuenta {
                     cuenta.getSaldo());
         }
 
-        double nuevoSaldo = cuenta.getSaldo() + monto;
+        double saldoAnterior = cuenta.getSaldo();
+        double nuevoSaldo = saldoAnterior + monto;
         cuenta.setSaldo(nuevoSaldo);
+
+        gestorMovimientos.registrarMovimiento(
+                cuenta.getNumeroCuenta(),
+                "DEPOSITO",
+                monto,
+                "Depósito en cuenta",
+                saldoAnterior,
+                nuevoSaldo);
 
         return ResultadoOperacion.exitoso(
                 "Depósito de $" + String.format("%.2f", monto) + " realizado correctamente",
@@ -72,8 +83,17 @@ public class GestorCuenta {
                     cuenta.getSaldo());
         }
 
-        double nuevoSaldo = cuenta.getSaldo() - monto;
+        double saldoAnterior = cuenta.getSaldo();
+        double nuevoSaldo = saldoAnterior - monto;
         cuenta.setSaldo(nuevoSaldo);
+
+        gestorMovimientos.registrarMovimiento(
+                cuenta.getNumeroCuenta(),
+                "RETIRO",
+                monto,
+                "Retiro de efectivo",
+                saldoAnterior,
+                nuevoSaldo);
 
         return ResultadoOperacion.exitoso(
                 "Retiro de $" + String.format("%.2f", monto) + " realizado correctamente",
@@ -115,11 +135,29 @@ public class GestorCuenta {
                     origen.getSaldo());
         }
 
-        double nuevoSaldoOrigen = origen.getSaldo() - monto;
-        double nuevoSaldoDestino = destino.getSaldo() + monto;
+        double saldoAnteriorOrigen = origen.getSaldo();
+        double saldoAnteriorDestino = destino.getSaldo();
+        double nuevoSaldoOrigen = saldoAnteriorOrigen - monto;
+        double nuevoSaldoDestino = saldoAnteriorDestino + monto;
 
         origen.setSaldo(nuevoSaldoOrigen);
         destino.setSaldo(nuevoSaldoDestino);
+
+        gestorMovimientos.registrarMovimiento(
+                origen.getNumeroCuenta(),
+                "TRANSFERENCIA ENVIADA",
+                monto,
+                "Transferencia a " + destino.getTitular() + " (Cta: " + destino.getNumeroCuenta() + ")",
+                saldoAnteriorOrigen,
+                nuevoSaldoOrigen);
+
+        gestorMovimientos.registrarMovimiento(
+                destino.getNumeroCuenta(),
+                "TRANSFERENCIA RECIBIDA",
+                monto,
+                "Transferencia de " + origen.getTitular() + " (Cta: " + origen.getNumeroCuenta() + ")",
+                saldoAnteriorDestino,
+                nuevoSaldoDestino);
 
         return ResultadoOperacion.exitoso(
                 "Transferencia de $" + String.format("%.2f", monto) +
@@ -184,5 +222,17 @@ public class GestorCuenta {
         }
         cuentas.remove(cuenta);
         return true;
+    }
+
+    public LinkedList<Movimiento> obtenerHistorialCuenta(String numeroCuenta) {
+        return gestorMovimientos.obtenerMovimientosPorCuenta(numeroCuenta);
+    }
+
+    public LinkedList<Movimiento> obtenerUltimosMovimientos(String numeroCuenta, int cantidad) {
+        return gestorMovimientos.obtenerUltimosMovimientos(numeroCuenta, cantidad);
+    }
+
+    public int contarMovimientos(String numeroCuenta) {
+        return gestorMovimientos.contarMovimientos(numeroCuenta);
     }
 }
