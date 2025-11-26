@@ -220,6 +220,11 @@ public class GestorCuenta {
         if (cuenta == null) {
             return false;
         }
+
+        if (cuenta.getSaldo() > 0) {
+            return false;
+        }
+
         cuentas.remove(cuenta);
         return true;
     }
